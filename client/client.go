@@ -148,7 +148,7 @@ func (kc *kClient) checkOptions() (err error) {
 	}
 	if kc.opt.Proxy != nil {
 		cfg := proxy.Config{
-			ServiceName:  kc.opt.Svr.ServiceName,
+			ServerInfo:   kc.opt.Svr,
 			Resolver:     kc.opt.Resolver,
 			Balancer:     kc.opt.Balancer,
 			Pool:         kc.opt.RemoteOpt.ConnPool,
