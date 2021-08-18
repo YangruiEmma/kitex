@@ -23,11 +23,12 @@ import (
 	"github.com/cloudwego/kitex/pkg/discovery"
 	"github.com/cloudwego/kitex/pkg/loadbalance"
 	"github.com/cloudwego/kitex/pkg/remote"
+	"github.com/cloudwego/kitex/pkg/rpcinfo"
 )
 
 // Config contains basic components used in service discovery process.
 type Config struct {
-	ServiceName  string
+	ServerInfo   *rpcinfo.EndpointBasicInfo
 	Resolver     discovery.Resolver
 	Balancer     loadbalance.Loadbalancer
 	Pool         remote.ConnPool
