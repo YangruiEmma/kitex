@@ -144,8 +144,8 @@ func (s *CBSuite) SetEventBusAndQueue(bus event.Bus, events event.Queue) {
 // Dump is to dump CircuitBreaker info for debug query.
 func (s *CBSuite) Dump() interface{} {
 	return map[string]interface{}{
-		serviceCBKey:  cbDebugInfo(s.servicePanel),
-		instanceCBKey: cbDebugInfo(s.instancePanel),
+		serviceCBKey:  cbDebugInfo(s.servicePanel, false),
+		instanceCBKey: cbDebugInfo(s.instancePanel, true),
 		cbConfig:      s.configInfo(),
 	}
 }
@@ -270,7 +270,7 @@ func (s *CBSuite) insTripFunc(key string) circuitbreaker.TripFunc {
 	return circuitbreaker.RateTripFunc(errRate, minSample)
 }
 
-func cbDebugInfo(panel circuitbreaker.Panel) map[string]interface{} {
+func cbDebugInfo(panel circuitbreaker.Panel, withoutClosed bool) map[string]interface{} {
 	dumper, ok := panel.(interface {
 		DumpBreakers() map[string]circuitbreaker.Breaker
 	})
@@ -280,7 +280,7 @@ func cbDebugInfo(panel circuitbreaker.Panel) map[string]interface{} {
 	cbMap := make(map[string]interface{})
 	for key, breaker := range dumper.DumpBreakers() {
 		cbState := breaker.State()
-		if cbState == circuitbreaker.Closed {
+		if cbState == circuitbreaker.Closed && withoutClosed {
 			continue
 		}
 		cbMap[key] = map[string]interface{}{
@@ -291,7 +291,7 @@ func cbDebugInfo(panel circuitbreaker.Panel) map[string]interface{} {
 			"error rate in 10s": breaker.Metricer().ErrorRate(),
 		}
 	}
-	if len(cbMap) == 0 {
+	if len(cbMap) == 0 && withoutClosed {
 		cbMap["msg"] = "all circuit breakers are in closed state"
 	}
 	return cbMap
