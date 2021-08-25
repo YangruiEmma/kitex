@@ -96,10 +96,10 @@ func circuitBreakerStop(ctx context.Context, policy StopPolicy, cbC *cbContainer
 	errRate := metricer.ErrorRate()
 	sample := metricer.Samples()
 	if errRate < policy.CBPolicy.ErrorRate {
-		klog.Warnf("retry circuit break closed, errRate=%0.9f, sample=%d", errRate, sample)
+		klog.Warnf("retry circuit break closed[%s], errRate=%0.9f, sample=%d", cbKey, errRate, sample)
 		return false, ""
 	}
-	klog.Warnf("retry circuit break, errRate=%0.9f, sample=%d", errRate, sample)
+	klog.Warnf("retry circuit break[%s], errRate=%0.9f, sample=%d", cbKey, errRate, sample)
 	return true, fmt.Sprintf("retry circuit break, errRate=%0.9f, sample=%d", errRate, sample)
 }
 
