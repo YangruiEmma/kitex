@@ -59,11 +59,10 @@ func discoveryEventHandler(name string, bus event.Bus, queue event.Queue) func(d
 		queue.Push(&event.Event{
 			Name: name,
 			Time: now,
-			Extra: &discovery.Change{
-				// Result not set to avoid memory leaking in debug port
-				Added:   d.Added,
-				Updated: d.Updated,
-				Removed: d.Removed,
+			Extra: map[string]interface{}{
+				"Added":   wrapInstances(d.Added),
+				"Updated": wrapInstances(d.Updated),
+				"Removed": wrapInstances(d.Removed),
 			},
 		})
 	}
@@ -178,4 +177,19 @@ func newIOErrorHandleMW(errHandle func(error) error) endpoint.Middleware {
 			return errHandle(err)
 		}
 	}
+}
+
+type instInfo struct {
+	Address string
+	Weight  int
+}
+
+func wrapInstances(insts []discovery.Instance) []*instInfo {
+	var instInfos = make([]*instInfo, 0, len(insts))
+	for i := range insts {
+		inst := insts[i]
+		addr := fmt.Sprintf("%s://%s", inst.Address().Network(), inst.Address().String())
+		instInfos = append(instInfos, &instInfo{Address: addr, Weight: inst.Weight()})
+	}
+	return instInfos
 }
