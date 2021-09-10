@@ -185,6 +185,9 @@ type instInfo struct {
 }
 
 func wrapInstances(insts []discovery.Instance) []*instInfo {
+	if len(insts) == 0 {
+		return nil
+	}
 	var instInfos = make([]*instInfo, 0, len(insts))
 	for i := range insts {
 		inst := insts[i]
