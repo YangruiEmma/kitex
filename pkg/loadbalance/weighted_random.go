@@ -18,6 +18,8 @@ package loadbalance
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/bytedance/gopkg/lang/fastrand"
@@ -197,6 +199,16 @@ func (wb *weightedBalancer) GetPicker(e discovery.Result) Picker {
 		return new(DummyPicker)
 	}
 
+	// TODO TEST
+	var sb strings.Builder
+	sb.WriteByte('[')
+	for _, inst := range w.instances {
+		sb.WriteString(fmt.Sprintf("addr=%s://%s, weight=%d;", inst.Address().Network(), inst.Address().String(), inst.Weight()))
+	}
+	sb.WriteByte(']')
+	klog.Infof("TODO test, GetPicker cacheable=%t, ret=%v", e.Cacheable, sb.String())
+	// TODO TEST
+
 	if w.balance {
 		picker := randomPickerPool.Get().(*randomPicker)
 		picker.immutableInstances = w.instances
@@ -277,6 +289,15 @@ func (wb *weightedBalancer) Rebalance(change discovery.Change) {
 	if !change.Result.Cacheable {
 		return
 	}
+	// TODO TEST
+	var sb strings.Builder
+	sb.WriteByte('[')
+	for _, inst := range change.Result.Instances {
+		sb.WriteString(fmt.Sprintf("addr=%s://%s, weight=%d;", inst.Address().Network(), inst.Address().String(), inst.Weight()))
+	}
+	sb.WriteByte(']')
+	klog.Infof("TODO test, Rebalance ret=%v", sb.String())
+	// TODO TEST
 	wb.cachedWeightInfo.Store(change.Result.CacheKey, wb.calcWeightInfo(change.Result))
 }
 
