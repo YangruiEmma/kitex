@@ -199,16 +199,6 @@ func (wb *weightedBalancer) GetPicker(e discovery.Result) Picker {
 		return new(DummyPicker)
 	}
 
-	// TODO TEST
-	var sb strings.Builder
-	sb.WriteByte('[')
-	for _, inst := range w.instances {
-		sb.WriteString(fmt.Sprintf("addr=%s://%s, weight=%d;", inst.Address().Network(), inst.Address().String(), inst.Weight()))
-	}
-	sb.WriteByte(']')
-	klog.Infof("TODO test, GetPicker cacheable=%t, ret=%v", e.Cacheable, sb.String())
-	// TODO TEST
-
 	if w.balance {
 		picker := randomPickerPool.Get().(*randomPicker)
 		picker.immutableInstances = w.instances
