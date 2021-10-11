@@ -72,6 +72,7 @@ func (r *failureRetryer) AllowRetry(ctx context.Context) (string, bool) {
 	r.RLock()
 	defer r.RUnlock()
 	if !r.enable || r.policy.StopPolicy.MaxRetryTimes == 0 {
+		klog.Infof("AllowRetry is false, enable=%t, MaxRetryTimes=%d", r.enable, r.policy.StopPolicy.MaxRetryTimes)
 		return "", false
 	}
 	if stop, msg := chainStop(ctx, r.policy.StopPolicy); stop {
@@ -117,6 +118,7 @@ func (r *failureRetryer) Do(ctx context.Context, rpcCall RPCCallFunc, firstRI rp
 					appendMsg := fmt.Sprintf("retried %d, %s", i-1, msg)
 					appendErrMsg(err, appendMsg)
 				}
+				klog.Infof("no retry, enable=%t, err=%v", r.enable, err)
 				break
 			}
 			callStart = time.Now()

@@ -181,6 +181,7 @@ func (rc *Container) WithRetryIfNeeded(ctx context.Context, rpcCall RPCCallFunc,
 		if _, err = rpcCall(ctx, nil); err == nil {
 			return true, nil
 		}
+		klog.Infof("retryer is nil")
 		return false, err
 	}
 
@@ -192,6 +193,7 @@ func (rc *Container) WithRetryIfNeeded(ctx context.Context, rpcCall RPCCallFunc,
 		if msg != "" {
 			retryer.AppendErrMsgIfNeeded(err, msg)
 		}
+		klog.Infof("AllowRetry is false")
 		return false, err
 	}
 
