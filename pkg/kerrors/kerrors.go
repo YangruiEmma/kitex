@@ -20,6 +20,8 @@ import (
 	"errors"
 	"os"
 	"strings"
+
+	"github.com/cloudwego/kitex/pkg/klog"
 )
 
 // Basic error types
@@ -167,7 +169,9 @@ var TimeoutCheckFunc func(err error) bool
 // IsTimeoutError check if the error is timeout
 func IsTimeoutError(err error) bool {
 	if TimeoutCheckFunc != nil {
-		return TimeoutCheckFunc(err)
+		isTimeout := TimeoutCheckFunc(err)
+		klog.Infof("retry error[%v], isTimeout=%t", err, isTimeout)
+		return isTimeout
 	}
 	return errors.Is(err, ErrRPCTimeout)
 }

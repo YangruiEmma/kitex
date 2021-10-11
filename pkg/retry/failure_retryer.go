@@ -55,12 +55,15 @@ func (r *failureRetryer) ShouldRetry(ctx context.Context, err error, callTimes i
 	r.RLock()
 	defer r.RUnlock()
 	if !r.enable || !r.isRetryErr(err) {
+		klog.Infof("retry error[%v], enable=%t", err, r.enable)
 		return "", false
 	}
 	if stop, msg := circuitBreakerStop(ctx, r.policy.StopPolicy, r.cbContainer, request, cbKey); stop {
+		klog.Infof("retry error[%v], circuitBreakerStop, msg=%s", err, msg)
 		return msg, false
 	}
 	if stop, msg := ddlStop(ctx, r.policy.StopPolicy, r.logger); stop {
+		klog.Infof("retry error[%v], ddlStop, msg=%s", err, msg)
 		return msg, false
 	}
 	r.backOff.Wait(callTimes)
@@ -118,7 +121,7 @@ func (r *failureRetryer) Do(ctx context.Context, rpcCall RPCCallFunc, firstRI rp
 					appendMsg := fmt.Sprintf("retried %d, %s", i-1, msg)
 					appendErrMsg(err, appendMsg)
 				}
-				klog.Infof("no retry, enable=%t, err=%v", r.enable, err)
+				klog.Infof("no retry, enable=%t, err=%v, msg=%s", r.enable, err, msg)
 				break
 			}
 			callStart = time.Now()
