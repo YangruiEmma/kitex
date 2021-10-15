@@ -23,6 +23,7 @@ import (
 	"strconv"
 
 	"github.com/bytedance/gopkg/cloud/metainfo"
+	"github.com/cloudwego/kitex/pkg/klog"
 
 	"github.com/cloudwego/kitex/client/callopt"
 	"github.com/cloudwego/kitex/internal/client"
@@ -146,6 +147,7 @@ func (kc *kClient) proxyInit(ctx context.Context) (context.Context, error) {
 			ctx = chr.HandleContext(ctx)
 		}
 		updateOptWithProxyCfg(cfg, kc.opt)
+		klog.Infof("Kitex: resolver=%T", kc.opt.Resolver)
 	}
 	return ctx, nil
 }
@@ -171,6 +173,7 @@ func (kc *kClient) initMiddlewares(ctx context.Context) {
 		kc.mws = richMWsWithBuilder(ctx, kc.opt.IMWBs, kc)
 	} else {
 		if kc.opt.Resolver != nil { // customized service discovery
+			klog.Infof("Kitex: add newResolveMWBuilder, %T", kc.opt.Resolver)
 			kc.mws = append(kc.mws, newResolveMWBuilder(kc.opt)(ctx))
 		}
 		kc.mws = append(kc.mws, newProxyMW(kc.opt.Proxy))

@@ -30,6 +30,7 @@ import (
 	"github.com/cloudwego/kitex/pkg/endpoint"
 	"github.com/cloudwego/kitex/pkg/event"
 	"github.com/cloudwego/kitex/pkg/kerrors"
+	"github.com/cloudwego/kitex/pkg/klog"
 	"github.com/cloudwego/kitex/pkg/loadbalance"
 	"github.com/cloudwego/kitex/pkg/loadbalance/lbcache"
 	"github.com/cloudwego/kitex/pkg/proxy"
@@ -99,6 +100,7 @@ func newResolveMWBuilder(opt *client.Options) endpoint.MiddlewareBuilder {
 		if opt.BalancerCacheOpt != nil {
 			cacheOpts = *opt.BalancerCacheOpt
 		}
+		klog.Infof("Kitex: NewBalancerFactory, resolver=%T", resolver)
 		balancerFactory := lbcache.NewBalancerFactory(resolver, balancer, cacheOpts)
 		rbIdx := balancerFactory.RegisterRebalanceHook(onChange)
 		opt.CloseCallbacks = append(opt.CloseCallbacks, func() error {

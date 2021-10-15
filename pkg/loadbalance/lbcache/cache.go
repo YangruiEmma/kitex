@@ -95,6 +95,7 @@ func cacheKey(resolver, balancer string, opts Options) string {
 // cache key with resolver name, balancer name and options
 func NewBalancerFactory(resolver discovery.Resolver, balancer loadbalance.Loadbalancer, opts Options) *BalancerFactory {
 	diagnosis.RegisterProbeFunc(opts.DiagnosisService, diagnosis.LbCacheKey, Dump)
+	klog.Infof("Kitex: NewBalancerFactory register LbCacheKey")
 	opts.check()
 	uniqueKey := cacheKey(resolver.Name(), balancer.Name(), opts)
 	val, ok := balancerFactories.Load(uniqueKey)
