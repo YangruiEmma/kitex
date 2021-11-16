@@ -22,7 +22,6 @@ import (
 	"fmt"
 
 	"github.com/apache/thrift/lib/go/thrift"
-
 	"github.com/cloudwego/kitex/pkg/protocol/bthrift"
 	"github.com/cloudwego/kitex/pkg/remote"
 	"github.com/cloudwego/kitex/pkg/remote/codec"
@@ -52,20 +51,20 @@ func (c thriftCodec) Marshal(ctx context.Context, message remote.Message, out re
 	msgType := message.MessageType()
 	seqID := message.RPCInfo().Invocation().SeqID()
 
-	//nw, nwOk := out.(remote.NocopyWrite)
-	//if msg, ok := data.(thriftMsgFastCodec); ok && nwOk {
-	//	// nocopy write is a special implementation of linked buffer, only bytebuffer implement NocopyWrite do FastWrite
-	//	msgBeginLen := bthrift.Binary.MessageBeginLength(methodName, thrift.TMessageType(msgType), seqID)
-	//	msgEndLen := bthrift.Binary.MessageEndLength()
-	//	buf, err := out.Malloc(msgBeginLen + msg.BLength() + msgEndLen)
-	//	if err != nil {
-	//		return perrors.NewProtocolErrorWithMsg(fmt.Sprintf("thrift marshal, Malloc failed: %s", err.Error()))
-	//	}
-	//	offset := bthrift.Binary.WriteMessageBeginNocopy(buf, nw, methodName, thrift.TMessageType(msgType), seqID)
-	//	offset += msg.FastWriteNocopy(buf[offset:], nw)
-	//	bthrift.Binary.WriteMessageEnd(buf[offset:])
-	//	return nil
-	//}
+	nw, nwOk := out.(remote.NocopyWrite)
+	if msg, ok := data.(thriftMsgFastCodec); ok && nwOk {
+		// nocopy write is a special implementation of linked buffer, only bytebuffer implement NocopyWrite do FastWrite
+		msgBeginLen := bthrift.Binary.MessageBeginLength(methodName, thrift.TMessageType(msgType), seqID)
+		msgEndLen := bthrift.Binary.MessageEndLength()
+		buf, err := out.Malloc(msgBeginLen + msg.BLength() + msgEndLen)
+		if err != nil {
+			return perrors.NewProtocolErrorWithMsg(fmt.Sprintf("thrift marshal, Malloc failed: %s", err.Error()))
+		}
+		offset := bthrift.Binary.WriteMessageBeginNocopy(buf, nw, methodName, thrift.TMessageType(msgType), seqID)
+		offset += msg.FastWriteNocopy(buf[offset:], nw)
+		bthrift.Binary.WriteMessageEnd(buf[offset:])
+		return nil
+	}
 	// 2. encode thrift
 	tProt := NewBinaryProtocol(out)
 	if err := tProt.WriteMessageBegin(methodName, thrift.TMessageType(msgType), seqID); err != nil {

@@ -75,7 +75,11 @@ func (t *svrTransHandler) Write(ctx context.Context, conn net.Conn, sendMsg remo
 	if err != nil {
 		return err
 	}
+	mallocLen := bufWriter.MallocLen()
 	err = bufWriter.Flush()
+	if mallocLen > 1024*1024*8 {
+		klog.Errorf("KITEX: mallocLen=%d, afterFlush=%d", mallocLen, bufWriter.MallocLen())
+	}
 	return
 }
 
