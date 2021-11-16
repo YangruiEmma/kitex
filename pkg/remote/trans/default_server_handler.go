@@ -24,6 +24,7 @@ import (
 	stats2 "github.com/cloudwego/kitex/internal/stats"
 	"github.com/cloudwego/kitex/pkg/endpoint"
 	"github.com/cloudwego/kitex/pkg/kerrors"
+	"github.com/cloudwego/kitex/pkg/klog"
 	"github.com/cloudwego/kitex/pkg/remote"
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/pkg/serviceinfo"
@@ -57,6 +58,10 @@ func (t *svrTransHandler) Write(ctx context.Context, conn net.Conn, sendMsg remo
 	defer func() {
 		t.ext.ReleaseBuffer(bufWriter, err)
 		stats2.Record(ctx, ri, stats.WriteFinish, err)
+		if err != nil {
+			conn.Close()
+			klog.Errorf("KITEX: close conn in Write")
+		}
 	}()
 
 	if methodInfo, _ := GetMethodInfo(ri, t.svcInfo); methodInfo != nil {
@@ -70,7 +75,8 @@ func (t *svrTransHandler) Write(ctx context.Context, conn net.Conn, sendMsg remo
 	if err != nil {
 		return err
 	}
-	return bufWriter.Flush()
+	err = bufWriter.Flush()
+	return
 }
 
 // Read implements the remote.ServerTransHandler interface.
@@ -186,6 +192,7 @@ func (t *svrTransHandler) OnError(ctx context.Context, err error, conn net.Conn)
 	ri := rpcinfo.GetRPCInfo(ctx)
 	rService, rAddr := getRemoteInfo(ri, conn)
 	if t.ext.IsRemoteClosedErr(err) {
+		t.opt.Logger.Errorf("KITEX: processing request error, remoteService=%s, remoteAddr=%v, err=%s\n%s", rService, rAddr, err.Error())
 		// it should not regard error which cause by remote connection closed as server error
 		if ri == nil {
 			return

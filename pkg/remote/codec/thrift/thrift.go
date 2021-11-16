@@ -23,12 +23,10 @@ import (
 
 	"github.com/apache/thrift/lib/go/thrift"
 
-	internal_stats "github.com/cloudwego/kitex/internal/stats"
 	"github.com/cloudwego/kitex/pkg/protocol/bthrift"
 	"github.com/cloudwego/kitex/pkg/remote"
 	"github.com/cloudwego/kitex/pkg/remote/codec"
 	"github.com/cloudwego/kitex/pkg/remote/codec/perrors"
-	"github.com/cloudwego/kitex/pkg/stats"
 )
 
 // NewThriftCodec creates the thrift binary codec.
@@ -54,20 +52,20 @@ func (c thriftCodec) Marshal(ctx context.Context, message remote.Message, out re
 	msgType := message.MessageType()
 	seqID := message.RPCInfo().Invocation().SeqID()
 
-	nw, nwOk := out.(remote.NocopyWrite)
-	if msg, ok := data.(thriftMsgFastCodec); ok && nwOk {
-		// nocopy write is a special implementation of linked buffer, only bytebuffer implement NocopyWrite do FastWrite
-		msgBeginLen := bthrift.Binary.MessageBeginLength(methodName, thrift.TMessageType(msgType), seqID)
-		msgEndLen := bthrift.Binary.MessageEndLength()
-		buf, err := out.Malloc(msgBeginLen + msg.BLength() + msgEndLen)
-		if err != nil {
-			return perrors.NewProtocolErrorWithMsg(fmt.Sprintf("thrift marshal, Malloc failed: %s", err.Error()))
-		}
-		offset := bthrift.Binary.WriteMessageBeginNocopy(buf, nw, methodName, thrift.TMessageType(msgType), seqID)
-		offset += msg.FastWriteNocopy(buf[offset:], nw)
-		bthrift.Binary.WriteMessageEnd(buf[offset:])
-		return nil
-	}
+	//nw, nwOk := out.(remote.NocopyWrite)
+	//if msg, ok := data.(thriftMsgFastCodec); ok && nwOk {
+	//	// nocopy write is a special implementation of linked buffer, only bytebuffer implement NocopyWrite do FastWrite
+	//	msgBeginLen := bthrift.Binary.MessageBeginLength(methodName, thrift.TMessageType(msgType), seqID)
+	//	msgEndLen := bthrift.Binary.MessageEndLength()
+	//	buf, err := out.Malloc(msgBeginLen + msg.BLength() + msgEndLen)
+	//	if err != nil {
+	//		return perrors.NewProtocolErrorWithMsg(fmt.Sprintf("thrift marshal, Malloc failed: %s", err.Error()))
+	//	}
+	//	offset := bthrift.Binary.WriteMessageBeginNocopy(buf, nw, methodName, thrift.TMessageType(msgType), seqID)
+	//	offset += msg.FastWriteNocopy(buf[offset:], nw)
+	//	bthrift.Binary.WriteMessageEnd(buf[offset:])
+	//	return nil
+	//}
 	// 2. encode thrift
 	tProt := NewBinaryProtocol(out)
 	if err := tProt.WriteMessageBegin(methodName, thrift.TMessageType(msgType), seqID); err != nil {
@@ -127,26 +125,26 @@ func (c thriftCodec) Unmarshal(ctx context.Context, message remote.Message, in r
 		return err
 	}
 	data := message.Data()
-	if msg, ok := data.(thriftMsgFastCodec); ok && message.PayloadLen() != 0 {
-		msgBeginLen := bthrift.Binary.MessageBeginLength(methodName, msgType, seqID)
-		ri := message.RPCInfo()
-		internal_stats.Record(ctx, ri, stats.WaitReadStart, nil)
-		buf, err := tProt.next(message.PayloadLen() - msgBeginLen - bthrift.Binary.MessageEndLength())
-		internal_stats.Record(ctx, ri, stats.WaitReadFinish, err)
-		if err != nil {
-			return remote.NewTransError(remote.ProtocolError, err)
-		}
-		_, err = msg.FastRead(buf)
-		if err != nil {
-			return remote.NewTransError(remote.ProtocolError, err)
-		}
-		err = tProt.ReadMessageEnd()
-		if err != nil {
-			return remote.NewTransError(remote.ProtocolError, err)
-		}
-		tProt.Recycle()
-		return err
-	}
+	//if msg, ok := data.(thriftMsgFastCodec); ok && message.PayloadLen() != 0 {
+	//	msgBeginLen := bthrift.Binary.MessageBeginLength(methodName, msgType, seqID)
+	//	ri := message.RPCInfo()
+	//	internal_stats.Record(ctx, ri, stats.WaitReadStart, nil)
+	//	buf, err := tProt.next(message.PayloadLen() - msgBeginLen - bthrift.Binary.MessageEndLength())
+	//	internal_stats.Record(ctx, ri, stats.WaitReadFinish, err)
+	//	if err != nil {
+	//		return remote.NewTransError(remote.ProtocolError, err)
+	//	}
+	//	_, err = msg.FastRead(buf)
+	//	if err != nil {
+	//		return remote.NewTransError(remote.ProtocolError, err)
+	//	}
+	//	err = tProt.ReadMessageEnd()
+	//	if err != nil {
+	//		return remote.NewTransError(remote.ProtocolError, err)
+	//	}
+	//	tProt.Recycle()
+	//	return err
+	//}
 	switch t := data.(type) {
 	case MessageReader:
 		if err = t.Read(tProt); err != nil {
