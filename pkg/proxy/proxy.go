@@ -48,3 +48,10 @@ type ForwardProxy interface {
 type BackwardProxy interface {
 	Replace(net.Addr) (net.Addr, error)
 }
+
+// ContextHandler is to handle context info, it just be used for passing params when client/server initialization.
+// Eg: Customized endpoint.MiddlewareBuilder need get init information to judge
+// if it is necessary to add the middleware into the call chain.
+type ContextHandler interface {
+	HandleContext(context.Context) context.Context
+}
