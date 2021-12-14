@@ -179,6 +179,9 @@ func NewWeightedBalancer() Loadbalancer {
 
 // GetPicker implements the Loadbalancer interface.
 func (wb *weightedBalancer) GetPicker(e discovery.Result) Picker {
+	if len(e.Instances) == 0 {
+		klog.Error("discovery instances is empty")
+	}
 	var w *weightInfo
 	if e.Cacheable {
 		wi, ok := wb.cachedWeightInfo.Load(e.CacheKey)
