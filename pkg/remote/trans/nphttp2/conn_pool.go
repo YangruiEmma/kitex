@@ -31,20 +31,21 @@ import (
 )
 
 // NewConnPool ...
-func NewConnPool() remote.LongConnPool {
-	return &connPool{}
+func NewConnPool(remoteService string) remote.LongConnPool {
+	return &connPool{remoteService: remoteService}
 }
 
 // MuxPool manages a pool of long connections.
 type connPool struct {
-	sfg   singleflight.Group
-	conns sync.Map // key address, value *clientConn
+	sfg           singleflight.Group
+	conns         sync.Map // key address, value *clientConn
+	remoteService string
 }
 
 var _ remote.LongConnPool = (*connPool)(nil)
 
 // Get pick or generate a net.Conn and return
-func (p *connPool) Get(ctx context.Context, network, address string, opt *remote.ConnOption) (net.Conn, error) {
+func (p *connPool) Get(ctx context.Context, network, address string, opt remote.ConnOption) (net.Conn, error) {
 	v, ok := p.conns.Load(address)
 	if ok {
 		tr := v.(grpc.ClientTransport)
@@ -60,7 +61,7 @@ func (p *connPool) Get(ctx context.Context, network, address string, opt *remote
 		if err != nil {
 			return nil, err
 		}
-		tr, err := grpc.NewClientTransport(context.Background(), conn.(netpoll.Connection), func(r grpc.GoAwayReason) {
+		tr, err := grpc.NewClientTransport(context.Background(), conn.(netpoll.Connection), p.remoteService, func(r grpc.GoAwayReason) {
 			p.conns.Delete(address)
 		}, func() {
 			// delete from conn pool
