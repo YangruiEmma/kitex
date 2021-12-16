@@ -94,8 +94,12 @@ func newTransport(dialer remote.Dialer, network, address string, connectTimeout 
 	return grpc.NewClientTransport(
 		context.Background(),
 		conn.(netpoll.Connection),
-		nil,
-		nil,
+		func(grpc.GoAwayReason) {
+			// do nothing
+		},
+		func() {
+			// do nothing
+		},
 	)
 }
 
