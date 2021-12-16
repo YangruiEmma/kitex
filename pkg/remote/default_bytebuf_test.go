@@ -38,7 +38,7 @@ func TestDefaultByteBuffer(t *testing.T) {
 	buf4 := NewReaderWriterBuffer(-1)
 	_, err := buf3.Bytes()
 	test.Assert(t, err == nil, err)
-	err = buf4.AppendBuffer(buf3)
+	_, err = buf4.AppendBuffer(buf3)
 	test.Assert(t, err == nil)
 	checkReadable(t, buf4)
 }

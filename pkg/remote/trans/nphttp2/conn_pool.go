@@ -130,7 +130,7 @@ func (p *connPool) Get(ctx context.Context, network, address string, opt remote.
 		}
 	}
 	tr, err, _ := p.sfg.Do(address, func() (i interface{}, e error) {
-		tr, err := p.newTransport(ctx, opt.Dialer, network, address, opt.ConnectTimeout)
+		tr, err := p.newTransport(context.Background(), opt.Dialer, network, address, opt.ConnectTimeout)
 		if err != nil {
 			return nil, err
 		}

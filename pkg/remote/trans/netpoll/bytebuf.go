@@ -230,9 +230,9 @@ func (b *netpollByteBuffer) NewBuffer() remote.ByteBuffer {
 }
 
 // AppendBuffer appends buf to the original buffer.
-func (b *netpollByteBuffer) AppendBuffer(buf remote.ByteBuffer) (err error) {
+func (b *netpollByteBuffer) AppendBuffer(buf remote.ByteBuffer) (n int, err error) {
 	subBuf := buf.(*netpollByteBuffer)
-	err = b.writer.Append(subBuf.writer)
+	n, err = b.writer.Append(subBuf.writer)
 	buf.Release(nil)
 	return
 }
