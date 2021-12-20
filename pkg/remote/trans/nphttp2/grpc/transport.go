@@ -548,6 +548,11 @@ type CallHdr struct {
 	PreviousAttempts int // value of grpc-previous-rpc-attempts header to set
 }
 
+// IsActive is the interface that exposing the underlying connection's active status.
+type IsActive interface {
+	IsActive() bool
+}
+
 // ClientTransport is the common interface for all gRPC client-side transport
 // implementations.
 type ClientTransport interface {
