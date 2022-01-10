@@ -23,6 +23,7 @@ import (
 	"sync"
 
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/cloudwego/kitex/pkg/klog"
 
 	"github.com/cloudwego/kitex/pkg/remote"
 	"github.com/cloudwego/kitex/pkg/remote/codec/perrors"
@@ -456,6 +457,7 @@ func (p *BinaryProtocol) ReadDouble() (value float64, err error) {
 // ReadString ...
 func (p *BinaryProtocol) ReadString() (value string, err error) {
 	size, e := p.ReadI32()
+	klog.Infof("Kitex: ReadString len=%d", size)
 	if e != nil {
 		return "", e
 	}
