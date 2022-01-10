@@ -23,6 +23,7 @@ import (
 	"sync/atomic"
 
 	"github.com/cloudwego/kitex/pkg/kerrors"
+	"github.com/cloudwego/kitex/pkg/klog"
 	"github.com/cloudwego/kitex/pkg/remote"
 	"github.com/cloudwego/kitex/pkg/remote/codec/perrors"
 	"github.com/cloudwego/kitex/pkg/retry"
@@ -119,6 +120,7 @@ func (c *defaultCodec) Decode(ctx context.Context, message remote.Message, in re
 		rpcinfo.AsMutableRPCStats(ri.Stats()).SetRecvSize(uint64(in.ReadLen()))
 	}()
 
+	klog.Infof("Kitex: defaultCodec Decode")
 	var flagBuf []byte
 	if flagBuf, err = in.Peek(2 * Size32); err != nil {
 		return perrors.NewProtocolErrorWithErrMsg(err, fmt.Sprintf("default codec read failed: %s", err.Error()))
@@ -130,10 +132,12 @@ func (c *defaultCodec) Decode(ctx context.Context, message remote.Message, in re
 	}
 	// 1. decode header
 	if IsTTHeader(flagBuf) {
+		klog.Infof("Kitex: defaultCodec Decode ttheader")
 		// TTHeader
 		if err = ttHeaderCodec.decode(ctx, message, in); err != nil {
 			return err
 		}
+		klog.Infof("Kitex: defaultCodec Decode ttheader end")
 		if flagBuf, err = in.Peek(2 * Size32); err != nil {
 			return perrors.NewProtocolErrorWithErrMsg(err, fmt.Sprintf("ttheader read payload first 8 byte failed: %s", err.Error()))
 		}
@@ -141,6 +145,7 @@ func (c *defaultCodec) Decode(ctx context.Context, message remote.Message, in re
 			return err
 		}
 	} else if isMeshHeader(flagBuf) {
+		klog.Infof("Kitex: defaultCodec Decode MeshHeader")
 		message.Tags()[remote.MeshHeader] = true
 		// MeshHeader
 		if err = meshHeaderCodec.decode(ctx, message, in); err != nil {
@@ -152,7 +157,9 @@ func (c *defaultCodec) Decode(ctx context.Context, message remote.Message, in re
 		if err = checkPayload(flagBuf, message, in, false); err != nil {
 			return err
 		}
+		klog.Infof("Kitex: defaultCodec Decode MeshHeader end")
 	} else {
+		klog.Infof("Kitex: defaultCodec Decode NoHeader")
 		// no Header
 		if err = checkPayload(flagBuf, message, in, false); err != nil {
 			return err
@@ -160,9 +167,11 @@ func (c *defaultCodec) Decode(ctx context.Context, message remote.Message, in re
 	}
 
 	// 2. decode body
+	klog.Infof("Kitex: defaultCodec Decode decodePayload start")
 	if err := c.decodePayload(ctx, message, in); err != nil {
 		return err
 	}
+	klog.Infof("Kitex: defaultCodec Decode decodePayload end")
 	return nil
 }
 

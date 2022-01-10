@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/cloudwego/kitex/pkg/klog"
 
 	internal_stats "github.com/cloudwego/kitex/internal/stats"
 	"github.com/cloudwego/kitex/pkg/protocol/bthrift"
@@ -143,19 +144,24 @@ func (c thriftCodec) Unmarshal(ctx context.Context, message remote.Message, in r
 	data := message.Data()
 	// decode with FastRead
 	if !c.disableFastRead {
+		klog.Infof("Kitex: thrift Unmarshal fastRead start, payloadlen=%d", message.PayloadLen())
 		if msg, ok := data.(thriftMsgFastCodec); ok && message.PayloadLen() != 0 {
 			msgBeginLen := bthrift.Binary.MessageBeginLength(methodName, msgType, seqID)
 			ri := message.RPCInfo()
 			internal_stats.Record(ctx, ri, stats.WaitReadStart, nil)
+			klog.Infof("Kitex: thrift Unmarshal fastRead next start, need=%d", message.PayloadLen() - msgBeginLen - bthrift.Binary.MessageEndLength())
 			buf, err := tProt.next(message.PayloadLen() - msgBeginLen - bthrift.Binary.MessageEndLength())
+			klog.Infof("Kitex: thrift Unmarshal fastRead next end")
 			internal_stats.Record(ctx, ri, stats.WaitReadFinish, err)
 			if err != nil {
 				return remote.NewTransError(remote.ProtocolError, err)
 			}
+			klog.Infof("Kitex: thrift fastRead start")
 			_, err = msg.FastRead(buf)
 			if err != nil {
 				return remote.NewTransError(remote.ProtocolError, err)
 			}
+			klog.Infof("Kitex: thrift fastRead end")
 			err = tProt.ReadMessageEnd()
 			if err != nil {
 				return remote.NewTransError(remote.ProtocolError, err)
@@ -164,6 +170,7 @@ func (c thriftCodec) Unmarshal(ctx context.Context, message remote.Message, in r
 			return err
 		}
 	}
+	klog.Infof("Kitex: thrift Unmarshal read start, payloadlen=%d", message.PayloadLen())
 	// decode with normal way
 	switch t := data.(type) {
 	case MessageReader:
@@ -177,6 +184,7 @@ func (c thriftCodec) Unmarshal(ctx context.Context, message remote.Message, in r
 	default:
 		return remote.NewTransErrorWithMsg(remote.InvalidProtocol, "decode failed, codec msg type not match with thriftCodec")
 	}
+	klog.Infof("Kitex: thrift Unmarshal read end")
 	tProt.ReadMessageEnd()
 	tProt.Recycle()
 	return err

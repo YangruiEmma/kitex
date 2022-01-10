@@ -73,7 +73,9 @@ func (t *cliTransHandler) Read(ctx context.Context, conn net.Conn, recvMsg remot
 	t.ext.SetReadTimeout(ctx, conn, recvMsg.RPCInfo().Config(), recvMsg.RPCRole())
 	bufReader = t.ext.NewReadByteBuffer(ctx, conn, recvMsg)
 	recvMsg.SetPayloadCodec(t.opt.PayloadCodec)
+	klog.Infof("Kitex: cliTransHandler Decode start(timeout=%d)", recvMsg.RPCInfo().Config().RPCTimeout())
 	err = t.codec.Decode(ctx, recvMsg, bufReader)
+	klog.Infof("Kitex: cliTransHandler Decode end")
 	if err != nil {
 		if t.ext.IsTimeoutErr(err) {
 			return kerrors.ErrRPCTimeout.WithCause(err)
