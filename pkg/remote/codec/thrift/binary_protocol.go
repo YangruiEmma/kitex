@@ -457,7 +457,7 @@ func (p *BinaryProtocol) ReadDouble() (value float64, err error) {
 // ReadString ...
 func (p *BinaryProtocol) ReadString() (value string, err error) {
 	size, e := p.ReadI32()
-	klog.Infof("Kitex: ReadString len=%d", size)
+	klog.Infof("Kitex: ReadString len=%d, readLen=%d", size, p.trans.ReadableLen())
 	if e != nil {
 		return "", e
 	}
@@ -467,6 +467,7 @@ func (p *BinaryProtocol) ReadString() (value string, err error) {
 	}
 	value, err = p.trans.ReadString(int(size))
 	if err != nil {
+		klog.Errorf("Kitex: ReadString failed, size=%d, readableLen=%d, err=%v", size, p.trans.ReadableLen(), err)
 		return value, perrors.NewProtocolError(err)
 	}
 	return value, nil
