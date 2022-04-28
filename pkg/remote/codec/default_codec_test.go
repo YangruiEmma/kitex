@@ -55,7 +55,7 @@ func TestThriftProtocolCheck(t *testing.T) {
 		flagBuf = flagBuf[8:]
 	}
 	rbf = remote.NewReaderBuffer(flagBuf)
-	err := checkPayload(flagBuf, msg, rbf, ttheader, 10)
+	err := checkPayload(flagBuf, msg, rbf, ttheader, 10, flagBuf)
 	test.Assert(t, err == nil, err)
 	test.Assert(t, msg.ProtocolInfo().TransProto == transport.TTHeader)
 	test.Assert(t, msg.RPCInfo().Config().TransportProtocol()&transport.TTHeader == transport.TTHeader)
@@ -73,7 +73,7 @@ func TestThriftProtocolCheck(t *testing.T) {
 		flagBuf = flagBuf[8:]
 	}
 	rbf = remote.NewReaderBuffer(flagBuf)
-	err = checkPayload(flagBuf, msg, rbf, ttheader, 10)
+	err = checkPayload(flagBuf, msg, rbf, ttheader, 10, flagBuf)
 	test.Assert(t, err == nil, err)
 	test.Assert(t, msg.ProtocolInfo().TransProto == transport.TTHeaderFramed)
 	test.Assert(t, msg.RPCInfo().Config().TransportProtocol()&transport.TTHeaderFramed == transport.TTHeaderFramed)
@@ -87,9 +87,9 @@ func TestThriftProtocolCheck(t *testing.T) {
 	ttheader = IsTTHeader(flagBuf)
 	test.Assert(t, !ttheader)
 	rbf = remote.NewReaderBuffer(flagBuf)
-	err = checkPayload(flagBuf, msg, rbf, ttheader, 10)
+	err = checkPayload(flagBuf, msg, rbf, ttheader, 10, flagBuf)
 	test.Assert(t, err == nil, err)
-	err = checkPayload(flagBuf, msg, rbf, ttheader, 9)
+	err = checkPayload(flagBuf, msg, rbf, ttheader, 9, flagBuf)
 	test.Assert(t, err != nil, err)
 	test.Assert(t, msg.ProtocolInfo().TransProto == transport.Framed)
 	test.Assert(t, msg.RPCInfo().Config().TransportProtocol()&transport.Framed == transport.Framed)
@@ -103,9 +103,9 @@ func TestThriftProtocolCheck(t *testing.T) {
 	ttheader = IsTTHeader(flagBuf)
 	test.Assert(t, !ttheader)
 	rbf = remote.NewReaderBuffer(flagBuf)
-	err = checkPayload(flagBuf, msg, rbf, ttheader, 10)
+	err = checkPayload(flagBuf, msg, rbf, ttheader, 10, flagBuf)
 	test.Assert(t, err == nil, err)
-	err = checkPayload(flagBuf, msg, rbf, ttheader, 9)
+	err = checkPayload(flagBuf, msg, rbf, ttheader, 9, flagBuf)
 	test.Assert(t, err != nil, err)
 	test.Assert(t, msg.ProtocolInfo().TransProto == transport.PurePayload)
 	test.Assert(t, msg.RPCInfo().Config().TransportProtocol()&transport.PurePayload == transport.PurePayload)
@@ -131,7 +131,7 @@ func TestProtobufProtocolCheck(t *testing.T) {
 		flagBuf = flagBuf[8:]
 	}
 	rbf = remote.NewReaderBuffer(flagBuf)
-	err := checkPayload(flagBuf, msg, rbf, ttheader, 10)
+	err := checkPayload(flagBuf, msg, rbf, ttheader, 10, flagBuf)
 	test.Assert(t, err == nil, err)
 	test.Assert(t, msg.ProtocolInfo().TransProto == transport.TTHeaderFramed)
 	test.Assert(t, msg.ProtocolInfo().CodecType == serviceinfo.Protobuf)
@@ -143,9 +143,9 @@ func TestProtobufProtocolCheck(t *testing.T) {
 	ttheader = IsTTHeader(flagBuf)
 	test.Assert(t, !ttheader)
 	rbf = remote.NewReaderBuffer(flagBuf)
-	err = checkPayload(flagBuf, msg, rbf, ttheader, 10)
+	err = checkPayload(flagBuf, msg, rbf, ttheader, 10, flagBuf)
 	test.Assert(t, err == nil, err)
-	err = checkPayload(flagBuf, msg, rbf, ttheader, 9)
+	err = checkPayload(flagBuf, msg, rbf, ttheader, 9, flagBuf)
 	test.Assert(t, err != nil, err)
 	test.Assert(t, msg.ProtocolInfo().TransProto == transport.Framed)
 	test.Assert(t, msg.ProtocolInfo().CodecType == serviceinfo.Protobuf)

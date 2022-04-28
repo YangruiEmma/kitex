@@ -146,6 +146,7 @@ func (c *defaultCodec) Decode(ctx context.Context, message remote.Message, in re
 	if flagBuf, err = in.Peek(2 * Size32); err != nil {
 		return perrors.NewProtocolErrorWithErrMsg(err, fmt.Sprintf("default codec read failed: %s", err.Error()))
 	}
+	first8Bytes := flagBuf
 
 	if err = checkRPCState(ctx, message); err != nil {
 		// there is one call has finished in retry task, it doesn't need to do decode for this call
@@ -171,7 +172,7 @@ func (c *defaultCodec) Decode(ctx context.Context, message remote.Message, in re
 			return perrors.NewProtocolErrorWithErrMsg(err, fmt.Sprintf("meshHeader read payload first 8 byte failed: %s", err.Error()))
 		}
 	}
-	if err = checkPayload(flagBuf, message, in, isTTHeader, c.maxSize); err != nil {
+	if err = checkPayload(flagBuf, message, in, isTTHeader, c.maxSize, first8Bytes); err != nil {
 		return err
 	}
 
@@ -277,8 +278,7 @@ func checkRPCState(ctx context.Context, message remote.Message) error {
 }
 
 func checkPayload(
-	flagBuf []byte, message remote.Message, in remote.ByteBuffer, isTTHeader bool, maxPayloadSize int,
-) error {
+	flagBuf []byte, message remote.Message, in remote.ByteBuffer, isTTHeader bool, maxPayloadSize int, first8Bytes []byte) error {
 	var transProto transport.Protocol
 	var codecType serviceinfo.PayloadCodec
 	if isThriftBinary(flagBuf) {
@@ -316,7 +316,7 @@ func checkPayload(
 		first4Bytes := binary.BigEndian.Uint32(flagBuf[:Size32])
 		second4Bytes := binary.BigEndian.Uint32(flagBuf[Size32:])
 		// 0xfff4fffd is the interrupt message of telnet
-		err := perrors.NewProtocolErrorWithMsg(fmt.Sprintf("invalid payload (first4Bytes=%#x, second4Bytes=%#x)", first4Bytes, second4Bytes))
+		err := perrors.NewProtocolErrorWithMsg(fmt.Sprintf("invalid payload (first4Bytes=%#x, second4Bytes=%#x), first8Bytes=%#x", first4Bytes, second4Bytes, first8Bytes))
 		return err
 	}
 	if err := checkPayloadSize(message.PayloadLen(), maxPayloadSize); err != nil {
