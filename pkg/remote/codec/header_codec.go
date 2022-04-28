@@ -200,6 +200,7 @@ func (t ttHeader) decode(ctx context.Context, message remote.Message, in remote.
 		fillBasicFromInfoOfTTHeader(message)
 	}
 	message.SetPayloadLen(int(totalLen - uint32(headerInfoSize) + Size32 - TTHeaderMetaSize))
+	klog.Warnf("ttheader headerMeta=%#x, headerInfo=%#v", headerMeta, headerInfo)
 	return err
 }
 

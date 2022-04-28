@@ -316,7 +316,7 @@ func checkPayload(
 		first4Bytes := binary.BigEndian.Uint32(flagBuf[:Size32])
 		second4Bytes := binary.BigEndian.Uint32(flagBuf[Size32:])
 		// 0xfff4fffd is the interrupt message of telnet
-		err := perrors.NewProtocolErrorWithMsg(fmt.Sprintf("invalid payload (first4Bytes=%#x, second4Bytes=%#x), first8Bytes=%#x", first4Bytes, second4Bytes, first8Bytes))
+		err := perrors.NewProtocolErrorWithMsg(fmt.Sprintf("invalid payload (first4Bytes=%#x, second4Bytes=%#x), first8Bytes=%#x, flagBuf=%#x", first4Bytes, second4Bytes, first8Bytes, flagBuf))
 		return err
 	}
 	if err := checkPayloadSize(message.PayloadLen(), maxPayloadSize); err != nil {
