@@ -200,7 +200,9 @@ func (t ttHeader) decode(ctx context.Context, message remote.Message, in remote.
 		fillBasicFromInfoOfTTHeader(message)
 	}
 	message.SetPayloadLen(int(totalLen - uint32(headerInfoSize) + Size32 - TTHeaderMetaSize))
-	klog.Warnf("ttheader logID=%s, headerMeta=%#x, headerInfo=%#x", ctx.Value("K_LOGID"), headerMeta, headerInfo)
+	klog.Warnf("ttheader logID=%s, headerMeta=%#x, headerInfo=%#x, transformIDNum=%d, transformIDs=%d, strInfo=%v, intInfo=%v",
+		ctx.Value("K_LOGID"),
+		headerMeta, headerInfo, transformIDNum, transformIDs, message.TransInfo().TransStrInfo(), message.TransInfo().TransIntInfo())
 	return err
 }
 
