@@ -55,7 +55,7 @@ func makeTimeoutErr(ctx context.Context, start time.Time, timeout time.Duration)
 	ri := rpcinfo.GetRPCInfo(ctx)
 	to := ri.To()
 
-	errMsg := fmt.Sprintf("timeout=%v, to=%s, method=%s", timeout, to.ServiceName(), to.Method())
+	errMsg := fmt.Sprintf("timestamp=%s timeout=%v, to=%s, method=%s", time.Now().Format("15:04:05.000000"), timeout, to.ServiceName(), to.Method())
 	target := to.Address()
 	if target != nil {
 		errMsg = fmt.Sprintf("%s, remote=%s", errMsg, target.String())
