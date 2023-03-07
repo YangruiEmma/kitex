@@ -109,9 +109,9 @@ func (mi *metainfoServerHandler) OnReadStream(ctx context.Context) (context.Cont
 }
 
 func (mi *metainfoServerHandler) WriteMeta(ctx context.Context, sendMsg remote.Message) (context.Context, error) {
-	//if kvs := metainfo.AllBackwardValuesToSend(ctx); len(kvs) > 0 {
-	//	//sendMsg.TransInfo().PutTransStrInfo(kvs)
-	//}
+	if kvs := metainfo.AllBackwardValuesToSend(ctx); len(kvs) > 0 {
+		//sendMsg.TransInfo().PutTransStrInfo(kvs)
+	}
 
 	return ctx, nil
 }
