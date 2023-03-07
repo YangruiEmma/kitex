@@ -84,7 +84,7 @@ func (mi *metainfoServerHandler) ReadMeta(ctx context.Context, recvMsg remote.Me
 	//if kvs := recvMsg.TransInfo().TransStrInfo(); len(kvs) > 0 {
 	//	ctx = metainfo.SetMetaInfoFromMap(ctx, kvs)
 	//}
-	//ctx = metainfo.WithBackwardValuesToSend(ctx)
+	ctx = metainfo.WithBackwardValuesToSend(ctx)
 	return ctx, nil
 }
 
