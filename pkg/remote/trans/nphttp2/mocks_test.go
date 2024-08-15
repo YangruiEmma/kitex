@@ -26,6 +26,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc/config"
 	"github.com/cloudwego/netpoll"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/runtime/protoimpl"
@@ -279,8 +280,8 @@ var (
 const defaultMockReadWriteBufferSize = 16
 
 func newMockConnPool() *connPool {
-	connPool := NewConnPool("test", uint32(0), grpc.ConnectOptions{
-		KeepaliveParams:       grpc.ClientKeepalive{},
+	connPool := NewConnPool("test", uint32(0), config.ConnectOptions{
+		KeepaliveParams:       config.ClientKeepalive{},
 		InitialWindowSize:     0,
 		InitialConnWindowSize: 0,
 		WriteBufferSize:       defaultMockReadWriteBufferSize,
@@ -311,10 +312,10 @@ func newMockServerOption() *remote.ServerOption {
 			return newMockRPCInfo()
 		},
 		TracerCtl: &rpcinfo.TraceController{},
-		GRPCCfg: &grpc.ServerConfig{
+		GRPCCfg: &config.ServerConfig{
 			MaxStreams:                 0,
-			KeepaliveParams:            grpc.ServerKeepalive{},
-			KeepaliveEnforcementPolicy: grpc.EnforcementPolicy{},
+			KeepaliveParams:            config.ServerKeepalive{},
+			KeepaliveEnforcementPolicy: config.EnforcementPolicy{},
 			InitialWindowSize:          0,
 			InitialConnWindowSize:      0,
 			MaxHeaderListSize:          nil,

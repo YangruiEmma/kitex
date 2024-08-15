@@ -32,6 +32,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc/config"
 	"github.com/cloudwego/netpoll"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/hpack"
@@ -70,7 +71,7 @@ type http2Client struct {
 	controlBuf *controlBuffer
 	fc         *trInFlow
 
-	kp               ClientKeepalive
+	kp               config.ClientKeepalive
 	keepaliveEnabled bool
 
 	initialWindowSize uint32
@@ -113,7 +114,7 @@ type http2Client struct {
 // newHTTP2Client constructs a connected ClientTransport to addr based on HTTP2
 // and starts to receive messages on it. Non-nil error returns if construction
 // fails.
-func newHTTP2Client(ctx context.Context, conn net.Conn, opts ConnectOptions,
+func newHTTP2Client(ctx context.Context, conn net.Conn, opts config.ConnectOptions,
 	remoteService string, onGoAway func(GoAwayReason), onClose func(),
 ) (_ *http2Client, err error) {
 	scheme := "http"
@@ -150,8 +151,8 @@ func newHTTP2Client(ctx context.Context, conn net.Conn, opts ConnectOptions,
 		dynamicWindow = false
 	}
 
-	writeBufSize := defaultWriteBufferSize
-	readBufSize := defaultReadBufferSize
+	writeBufSize := config.DefaultWriteBufferSize
+	readBufSize := config.DefaultReadBufferSize
 	if opts.WriteBufferSize > 0 {
 		writeBufSize = opts.WriteBufferSize
 	}

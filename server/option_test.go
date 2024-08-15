@@ -36,7 +36,7 @@ import (
 	"github.com/cloudwego/kitex/pkg/remote/trans/netpoll"
 	"github.com/cloudwego/kitex/pkg/remote/trans/netpollmux"
 	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2"
-	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc"
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc/config"
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/pkg/serviceinfo"
 	"github.com/cloudwego/kitex/pkg/stats"
@@ -458,7 +458,7 @@ func TestRemoteOptGRPCCfgUintValueOption(t *testing.T) {
 func TestGRPCKeepaliveEnforcementPolicyOption(t *testing.T) {
 	// random value between 1 and 100
 	randInt := rand.Int31n(100) + 1
-	kep := grpc.EnforcementPolicy{
+	kep := config.EnforcementPolicy{
 		MinTime:             time.Duration(randInt) * time.Second,
 		PermitWithoutStream: true,
 	}
@@ -486,7 +486,7 @@ func TestGRPCKeepaliveParamsOption(t *testing.T) {
 	randTimeDuration4 := time.Duration(rand.Int31n(10)+1) * time.Hour
 	randTimeDuration5 := time.Duration(rand.Int31n(100)+1) * time.Second
 
-	kp := grpc.ServerKeepalive{
+	kp := config.ServerKeepalive{
 		MaxConnectionIdle:     randTimeDuration1,
 		MaxConnectionAge:      randTimeDuration2,
 		MaxConnectionAgeGrace: randTimeDuration3,

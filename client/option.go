@@ -37,6 +37,7 @@ import (
 	"github.com/cloudwego/kitex/pkg/remote"
 	"github.com/cloudwego/kitex/pkg/remote/trans/netpollmux"
 	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc"
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc/config"
 	"github.com/cloudwego/kitex/pkg/retry"
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/pkg/stats"
@@ -487,7 +488,7 @@ func WithGRPCMaxHeaderListSize(s uint32) Option {
 
 // WithGRPCKeepaliveParams returns a DialOption that specifies keepalive parameters for the client transport.
 // It corresponds to the WithKeepaliveParams DialOption of gRPC.
-func WithGRPCKeepaliveParams(kp grpc.ClientKeepalive) Option {
+func WithGRPCKeepaliveParams(kp config.ClientKeepalive) Option {
 	if kp.Time < grpc.KeepaliveMinPingTime {
 		kp.Time = grpc.KeepaliveMinPingTime
 	}

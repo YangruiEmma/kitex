@@ -35,6 +35,7 @@ import (
 	"time"
 
 	"github.com/cloudwego/kitex/pkg/remote/codec/protobuf/encoding"
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc/config"
 
 	"github.com/cloudwego/netpoll"
 	"golang.org/x/net/http2"
@@ -82,9 +83,9 @@ type http2Server struct {
 	controlBuf *controlBuffer
 	fc         *trInFlow
 	// Keepalive and max-age parameters for the server.
-	kp ServerKeepalive
+	kp config.ServerKeepalive
 	// Keepalive enforcement policy.
-	kep EnforcementPolicy
+	kep config.EnforcementPolicy
 	// The time instance last ping was received.
 	lastPingAt time.Time
 	// Number of times the client has violated keepalive ping policy so far.
@@ -118,7 +119,7 @@ type http2Server struct {
 
 // newHTTP2Server constructs a ServerTransport based on HTTP2. ConnectionError is
 // returned if something goes wrong.
-func newHTTP2Server(ctx context.Context, conn net.Conn, config *ServerConfig) (_ ServerTransport, err error) {
+func newHTTP2Server(ctx context.Context, conn net.Conn, config *config.ServerConfig) (_ ServerTransport, err error) {
 	maxHeaderListSize := defaultServerMaxHeaderListSize
 	if config.MaxHeaderListSize != nil {
 		maxHeaderListSize = *config.MaxHeaderListSize

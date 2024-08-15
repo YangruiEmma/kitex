@@ -18,7 +18,7 @@
  * Modifications are Copyright 2021 CloudWeGo Authors.
  */
 
-package grpc
+package config
 
 import (
 	"time"

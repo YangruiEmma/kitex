@@ -25,6 +25,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc/config"
 	"golang.org/x/sync/singleflight"
 
 	"github.com/cloudwego/kitex/pkg/klog"
@@ -42,7 +43,7 @@ func poolSize() uint32 {
 }
 
 // NewConnPool ...
-func NewConnPool(remoteService string, size uint32, connOpts grpc.ConnectOptions) *connPool {
+func NewConnPool(remoteService string, size uint32, connOpts config.ConnectOptions) *connPool {
 	if size == 0 {
 		size = poolSize()
 	}
@@ -59,7 +60,7 @@ type connPool struct {
 	sfg           singleflight.Group
 	conns         sync.Map // key: address, value: *transports
 	remoteService string   // remote service name
-	connOpts      grpc.ConnectOptions
+	connOpts      config.ConnectOptions
 }
 
 type transports struct {
@@ -102,7 +103,7 @@ func (t *transports) close() {
 var _ remote.LongConnPool = (*connPool)(nil)
 
 func (p *connPool) newTransport(ctx context.Context, dialer remote.Dialer, network, address string,
-	connectTimeout time.Duration, opts grpc.ConnectOptions,
+	connectTimeout time.Duration, opts config.ConnectOptions,
 ) (grpc.ClientTransport, error) {
 	conn, err := dialer.DialTimeout(network, address, connectTimeout)
 	if err != nil {

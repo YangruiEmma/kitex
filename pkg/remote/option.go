@@ -23,7 +23,7 @@ import (
 
 	"github.com/cloudwego/kitex/pkg/endpoint"
 	"github.com/cloudwego/kitex/pkg/profiler"
-	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc"
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc/config"
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/pkg/serviceinfo"
 	"github.com/cloudwego/kitex/pkg/streaming"
@@ -109,7 +109,7 @@ type ServerOption struct {
 	ProfilerTransInfoTagging TransInfoTagging
 	ProfilerMessageTagging   MessageTagging
 
-	GRPCCfg *grpc.ServerConfig
+	GRPCCfg *config.ServerConfig
 
 	GRPCUnknownServiceHandler func(ctx context.Context, method string, stream streaming.Stream) error
 

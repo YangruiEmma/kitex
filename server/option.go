@@ -22,6 +22,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc/config"
 	"github.com/cloudwego/localsession/backup"
 
 	internal_server "github.com/cloudwego/kitex/internal/server"
@@ -34,7 +35,6 @@ import (
 	"github.com/cloudwego/kitex/pkg/remote/codec/protobuf"
 	"github.com/cloudwego/kitex/pkg/remote/codec/thrift"
 	"github.com/cloudwego/kitex/pkg/remote/trans/netpollmux"
-	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc"
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/pkg/serviceinfo"
 	"github.com/cloudwego/kitex/pkg/stats"
@@ -297,7 +297,7 @@ func WithGRPCInitialConnWindowSize(s uint32) Option {
 
 // WithGRPCKeepaliveParams returns an Option that sets keepalive and max-age parameters for the server.
 // It corresponds to the KeepaliveParams ServerOption of gRPC.
-func WithGRPCKeepaliveParams(kp grpc.ServerKeepalive) Option {
+func WithGRPCKeepaliveParams(kp config.ServerKeepalive) Option {
 	if kp.Time > 0 && kp.Time < time.Second {
 		kp.Time = time.Second
 	}
@@ -311,7 +311,7 @@ func WithGRPCKeepaliveParams(kp grpc.ServerKeepalive) Option {
 
 // WithGRPCKeepaliveEnforcementPolicy returns an Option that sets keepalive enforcement policy for the server.
 // It corresponds to the KeepaliveEnforcementPolicy ServerOption of gRPC.
-func WithGRPCKeepaliveEnforcementPolicy(kep grpc.EnforcementPolicy) Option {
+func WithGRPCKeepaliveEnforcementPolicy(kep config.EnforcementPolicy) Option {
 	return Option{F: func(o *internal_server.Options, di *utils.Slice) {
 		di.Push(fmt.Sprintf("WithGRPCKeepaliveEnforcementPolicy(%+v)", kep))
 

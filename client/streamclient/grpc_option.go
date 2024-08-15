@@ -20,7 +20,7 @@ import (
 	"crypto/tls"
 
 	"github.com/cloudwego/kitex/client"
-	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc"
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc/config"
 )
 
 // WithGRPCConnPoolSize sets the value for the client connection pool size.
@@ -64,7 +64,7 @@ func WithGRPCMaxHeaderListSize(s uint32) Option {
 
 // WithGRPCKeepaliveParams returns a DialOption that specifies keepalive parameters for the
 // client transport. It corresponds to the WithKeepaliveParams DialOption of gRPC.
-func WithGRPCKeepaliveParams(kp grpc.ClientKeepalive) Option {
+func WithGRPCKeepaliveParams(kp config.ClientKeepalive) Option {
 	return ConvertOptionFrom(client.WithGRPCKeepaliveParams(kp))
 }
 

@@ -24,6 +24,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc/config"
 	"github.com/golang/mock/gomock"
 
 	"github.com/cloudwego/kitex/internal/client"
@@ -488,7 +489,7 @@ func TestWithGRPCMaxHeaderListSize(t *testing.T) {
 func TestWithGRPCKeepaliveParams(t *testing.T) {
 	opts := client.NewOptions(
 		[]client.Option{
-			WithGRPCKeepaliveParams(grpc.ClientKeepalive{
+			WithGRPCKeepaliveParams(config.ClientKeepalive{
 				Time:                5 * time.Second, // less than  grpc.KeepaliveMinPingTime(5s)
 				Timeout:             20 * time.Second,
 				PermitWithoutStream: true,

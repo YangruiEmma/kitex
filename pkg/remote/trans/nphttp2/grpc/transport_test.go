@@ -37,6 +37,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc/config"
 	"github.com/cloudwego/netpoll"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/hpack"
@@ -293,7 +294,7 @@ func (h *testStreamHandler) handleStreamDelayRead(t *testing.T, s *Stream) {
 }
 
 // start starts server. Other goroutines should block on s.readyChan for further operations.
-func (s *server) start(t *testing.T, port int, serverConfig *ServerConfig, ht hType) {
+func (s *server) start(t *testing.T, port int, serverConfig *config.ServerConfig, ht hType) {
 	// 创建 listener
 	var err error
 	if port == 0 {
@@ -441,7 +442,7 @@ func (s *server) addr() string {
 	return s.lis.Addr().String()
 }
 
-func setUpServerOnly(t *testing.T, port int, serverConfig *ServerConfig, ht hType) *server {
+func setUpServerOnly(t *testing.T, port int, serverConfig *config.ServerConfig, ht hType) *server {
 	server := &server{startedErr: make(chan error, 1), ready: make(chan struct{})}
 	go server.start(t, port, serverConfig, ht)
 	server.wait(t, time.Second)
@@ -449,10 +450,10 @@ func setUpServerOnly(t *testing.T, port int, serverConfig *ServerConfig, ht hTyp
 }
 
 func setUp(t *testing.T, port int, maxStreams uint32, ht hType) (*server, *http2Client) {
-	return setUpWithOptions(t, port, &ServerConfig{MaxStreams: maxStreams}, ht, ConnectOptions{})
+	return setUpWithOptions(t, port, &config.ServerConfig{MaxStreams: maxStreams}, ht, config.ConnectOptions{})
 }
 
-func setUpWithOptions(t *testing.T, port int, serverConfig *ServerConfig, ht hType, copts ConnectOptions) (*server, *http2Client) {
+func setUpWithOptions(t *testing.T, port int, serverConfig *config.ServerConfig, ht hType, copts config.ConnectOptions) (*server, *http2Client) {
 	server := setUpServerOnly(t, port, serverConfig, ht)
 	conn, err := netpoll.NewDialer().DialTimeout("tcp", "localhost:"+server.port, time.Second)
 	if err != nil {
@@ -465,7 +466,7 @@ func setUpWithOptions(t *testing.T, port int, serverConfig *ServerConfig, ht hTy
 	return server, ct.(*http2Client)
 }
 
-func setUpWithNoPingServer(t *testing.T, copts ConnectOptions, connCh chan net.Conn, exitCh chan struct{}) *http2Client {
+func setUpWithNoPingServer(t *testing.T, copts config.ConnectOptions, connCh chan net.Conn, exitCh chan struct{}) *http2Client {
 	lis, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
 		t.Fatalf("Failed to listen: %v", err)
@@ -513,8 +514,8 @@ func setUpWithNoPingServer(t *testing.T, copts ConnectOptions, connCh chan net.C
 // TestInflightStreamClosing ensures that closing in-flight stream
 // sends status error to concurrent stream reader.
 func TestInflightStreamClosing(t *testing.T) {
-	serverConfig := &ServerConfig{}
-	server, client := setUpWithOptions(t, 0, serverConfig, suspended, ConnectOptions{})
+	serverConfig := &config.ServerConfig{}
+	server, client := setUpWithOptions(t, 0, serverConfig, suspended, config.ConnectOptions{})
 	defer server.stop()
 	defer client.Close()
 
@@ -678,11 +679,11 @@ func TestLargeMessage(t *testing.T) {
 
 func TestLargeMessageWithDelayRead(t *testing.T) {
 	// Disable dynamic flow control.
-	sc := &ServerConfig{
+	sc := &config.ServerConfig{
 		InitialWindowSize:     defaultWindowSize,
 		InitialConnWindowSize: defaultWindowSize,
 	}
-	co := ConnectOptions{
+	co := config.ConnectOptions{
 		InitialWindowSize:     defaultWindowSize,
 		InitialConnWindowSize: defaultWindowSize,
 	}
@@ -870,10 +871,10 @@ func TestLargeMessageSuspension(t *testing.T) {
 }
 
 func TestMaxStreams(t *testing.T) {
-	serverConfig := &ServerConfig{
+	serverConfig := &config.ServerConfig{
 		MaxStreams: 1,
 	}
-	server, ct := setUpWithOptions(t, 0, serverConfig, suspended, ConnectOptions{})
+	server, ct := setUpWithOptions(t, 0, serverConfig, suspended, config.ConnectOptions{})
 	defer ct.Close()
 	defer server.stop()
 	callHdr := &CallHdr{
@@ -1006,11 +1007,11 @@ func TestServerContextCanceledOnClosedConnection(t *testing.T) {
 
 // FIXME delete the comments
 func TestClientConnDecoupledFromApplicationRead(t *testing.T) {
-	connectOptions := ConnectOptions{
+	connectOptions := config.ConnectOptions{
 		InitialWindowSize:     defaultWindowSize,
 		InitialConnWindowSize: defaultWindowSize,
 	}
-	server, client := setUpWithOptions(t, 0, &ServerConfig{}, notifyCall, connectOptions)
+	server, client := setUpWithOptions(t, 0, &config.ServerConfig{}, notifyCall, connectOptions)
 	defer server.stop()
 	defer client.Close()
 
@@ -1094,11 +1095,11 @@ func TestClientConnDecoupledFromApplicationRead(t *testing.T) {
 }
 
 func TestServerConnDecoupledFromApplicationRead(t *testing.T) {
-	serverConfig := &ServerConfig{
+	serverConfig := &config.ServerConfig{
 		InitialWindowSize:     defaultWindowSize,
 		InitialConnWindowSize: defaultWindowSize,
 	}
-	server, client := setUpWithOptions(t, 0, serverConfig, suspended, ConnectOptions{})
+	server, client := setUpWithOptions(t, 0, serverConfig, suspended, config.ConnectOptions{})
 	defer server.stop()
 	defer client.Close()
 	waitWhileTrue(t, func() (bool, error) {
@@ -1164,7 +1165,7 @@ func TestServerConnDecoupledFromApplicationRead(t *testing.T) {
 
 func TestServerWithMisbehavedClient(t *testing.T) {
 	var wg sync.WaitGroup
-	server := setUpServerOnly(t, 0, &ServerConfig{}, suspended)
+	server := setUpServerOnly(t, 0, &config.ServerConfig{}, suspended)
 	defer func() {
 		wg.Wait()
 		server.stop()
@@ -1580,11 +1581,11 @@ func TestAccountCheckDynamicWindowLargeMessage(t *testing.T) {
 }
 
 func testFlowControlAccountCheck(t *testing.T, msgSize int, wc windowSizeConfig) {
-	sc := &ServerConfig{
+	sc := &config.ServerConfig{
 		InitialWindowSize:     wc.serverStream,
 		InitialConnWindowSize: wc.serverConn,
 	}
-	co := ConnectOptions{
+	co := config.ConnectOptions{
 		InitialWindowSize:     wc.clientStream,
 		InitialConnWindowSize: wc.clientConn,
 	}

@@ -18,9 +18,12 @@ package apache
 
 import (
 	"errors"
+	"io"
 
 	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/cloudwego/gopkg/protocol/thrift/apache"
+	"github.com/cloudwego/kitex/pkg/protocol/bthrift/internal"
+	"github.com/cloudwego/kitex/pkg/remote"
 )
 
 func init() {
@@ -32,6 +35,8 @@ func init() {
 
 var errNotThriftTStruct = errors.New("not thrift.TStruct")
 
+var errNotKByteBuffer = errors.New("not kitex ByteBuffer")
+
 func checkTStruct(v interface{}) error {
 	_, ok := v.(thrift.TStruct)
 	if !ok {
@@ -40,20 +45,28 @@ func checkTStruct(v interface{}) error {
 	return nil
 }
 
-func callThriftRead(t apache.TTransport, v interface{}) error {
+func callThriftRead(rw io.ReadWriter, v interface{}) error {
 	p, ok := v.(thrift.TStruct)
 	if !ok {
 		return errNotThriftTStruct
 	}
-	in := thrift.NewTBinaryProtocol(t, true, true)
+	t, ok := rw.(remote.ByteBuffer)
+	if !ok {
+		return errNotKByteBuffer
+	}
+	in := internal.NewBinaryProtocol(t)
 	return p.Read(in)
 }
 
-func callThriftWrite(t apache.TTransport, v interface{}) error {
+func callThriftWrite(rw io.ReadWriter, v interface{}) error {
 	p, ok := v.(thrift.TStruct)
 	if !ok {
 		return errNotThriftTStruct
 	}
-	out := thrift.NewTBinaryProtocol(t, true, true)
+	t, ok := rw.(remote.ByteBuffer)
+	if !ok {
+		return errNotKByteBuffer
+	}
+	out := internal.NewBinaryProtocol(t)
 	return p.Write(out)
 }

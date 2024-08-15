@@ -24,7 +24,8 @@ import (
 	"github.com/cloudwego/gopkg/protocol/thrift"
 	"github.com/cloudwego/gopkg/protocol/thrift/apache"
 
-	athrift "github.com/cloudwego/kitex/pkg/protocol/bthrift/apache"
+	// TODO fix
+	athrift "github.com/apache/thrift/lib/go/thrift"
 )
 
 // ThriftMessageCodec is used to codec thrift messages.

@@ -21,6 +21,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc/config"
 	"github.com/cloudwego/localsession/backup"
 
 	"github.com/cloudwego/kitex/internal/configutil"
@@ -42,7 +43,6 @@ import (
 	"github.com/cloudwego/kitex/pkg/remote/codec/thrift"
 	"github.com/cloudwego/kitex/pkg/remote/connpool"
 	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2"
-	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc"
 	"github.com/cloudwego/kitex/pkg/retry"
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/pkg/serviceinfo"
@@ -110,7 +110,7 @@ type Options struct {
 
 	// GRPC
 	GRPCConnPoolSize uint32
-	GRPCConnectOpts  *grpc.ConnectOptions
+	GRPCConnectOpts  *config.ConnectOptions
 
 	// XDS
 	XDSEnabled          bool
@@ -152,7 +152,7 @@ func NewOptions(opts []Option) *Options {
 
 		TracerCtl: &rpcinfo.TraceController{},
 
-		GRPCConnectOpts: new(grpc.ConnectOptions),
+		GRPCConnectOpts: new(config.ConnectOptions),
 	}
 	o.Apply(opts)
 

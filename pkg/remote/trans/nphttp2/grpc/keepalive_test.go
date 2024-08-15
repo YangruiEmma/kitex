@@ -31,6 +31,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc/config"
 	"golang.org/x/net/http2"
 )
 
@@ -40,12 +41,12 @@ const defaultTestTimeout = 10 * time.Second
 // client. An idle client is one who doesn't make any RPC calls for a duration
 // of MaxConnectionIdle time.
 func TestMaxConnectionIdle(t *testing.T) {
-	serverConfig := &ServerConfig{
-		KeepaliveParams: ServerKeepalive{
+	serverConfig := &config.ServerConfig{
+		KeepaliveParams: config.ServerKeepalive{
 			MaxConnectionIdle: 500 * time.Millisecond,
 		},
 	}
-	server, client := setUpWithOptions(t, 0, serverConfig, suspended, ConnectOptions{})
+	server, client := setUpWithOptions(t, 0, serverConfig, suspended, config.ConnectOptions{})
 	defer func() {
 		client.Close()
 		server.stop()
@@ -78,12 +79,12 @@ func TestMaxConnectionIdle(t *testing.T) {
 // TestMaxConenctionIdleBusyClient tests that a server will not send GoAway to
 // a busy client.
 func TestMaxConnectionIdleBusyClient(t *testing.T) {
-	serverConfig := &ServerConfig{
-		KeepaliveParams: ServerKeepalive{
+	serverConfig := &config.ServerConfig{
+		KeepaliveParams: config.ServerKeepalive{
 			MaxConnectionIdle: 500 * time.Millisecond,
 		},
 	}
-	server, client := setUpWithOptions(t, 0, serverConfig, suspended, ConnectOptions{})
+	server, client := setUpWithOptions(t, 0, serverConfig, suspended, config.ConnectOptions{})
 	defer func() {
 		client.Close()
 		server.stop()
@@ -154,13 +155,13 @@ func TestMaxConnectionIdleBusyClient(t *testing.T) {
 // This test creates a regular net.Conn connection to the server and sends the
 // clientPreface and the initial Settings frame, and then remains unresponsive.
 func TestKeepaliveServerClosesUnresponsiveClient(t *testing.T) {
-	serverConfig := &ServerConfig{
-		KeepaliveParams: ServerKeepalive{
+	serverConfig := &config.ServerConfig{
+		KeepaliveParams: config.ServerKeepalive{
 			Time:    250 * time.Millisecond,
 			Timeout: 250 * time.Millisecond,
 		},
 	}
-	server, client := setUpWithOptions(t, 0, serverConfig, suspended, ConnectOptions{})
+	server, client := setUpWithOptions(t, 0, serverConfig, suspended, config.ConnectOptions{})
 	defer func() {
 		client.Close()
 		server.stop()
@@ -211,15 +212,15 @@ func TestKeepaliveServerClosesUnresponsiveClient(t *testing.T) {
 // TestKeepaliveServerWithResponsiveClient tests that a server doesn't close
 // the connection with a client that responds to keepalive pings.
 func TestKeepaliveServerWithResponsiveClient(t *testing.T) {
-	serverConfig := &ServerConfig{
-		KeepaliveParams: ServerKeepalive{
+	serverConfig := &config.ServerConfig{
+		KeepaliveParams: config.ServerKeepalive{
 			Time:    500 * time.Millisecond,
 			Timeout: 500 * time.Millisecond,
 		},
 	}
-	server, client := setUpWithOptions(t, 0, serverConfig, suspended, ConnectOptions{
+	server, client := setUpWithOptions(t, 0, serverConfig, suspended, config.ConnectOptions{
 		// FIXME the original ut don't contain KeepaliveParams
-		KeepaliveParams: ClientKeepalive{
+		KeepaliveParams: config.ClientKeepalive{
 			Time:                500 * time.Millisecond,
 			Timeout:             500 * time.Millisecond,
 			PermitWithoutStream: true,
@@ -250,7 +251,7 @@ func TestKeepaliveClientClosesUnresponsiveServer(t *testing.T) {
 	connCh := make(chan net.Conn, 1)
 	exitCh := make(chan struct{})
 	defer func() { close(exitCh) }()
-	client := setUpWithNoPingServer(t, ConnectOptions{KeepaliveParams: ClientKeepalive{
+	client := setUpWithNoPingServer(t, config.ConnectOptions{KeepaliveParams: config.ClientKeepalive{
 		Time:                250 * time.Millisecond,
 		Timeout:             250 * time.Millisecond,
 		PermitWithoutStream: true,
@@ -286,7 +287,7 @@ func TestKeepaliveClientOpenWithUnresponsiveServer(t *testing.T) {
 	connCh := make(chan net.Conn, 1)
 	exitCh := make(chan struct{})
 	defer func() { close(exitCh) }()
-	client := setUpWithNoPingServer(t, ConnectOptions{KeepaliveParams: ClientKeepalive{
+	client := setUpWithNoPingServer(t, config.ConnectOptions{KeepaliveParams: config.ClientKeepalive{
 		Time:    250 * time.Millisecond,
 		Timeout: 250 * time.Millisecond,
 	}}, connCh, exitCh)
@@ -319,7 +320,7 @@ func TestKeepaliveClientClosesWithActiveStreams(t *testing.T) {
 	connCh := make(chan net.Conn, 1)
 	exitCh := make(chan struct{})
 	defer func() { close(exitCh) }()
-	client := setUpWithNoPingServer(t, ConnectOptions{KeepaliveParams: ClientKeepalive{
+	client := setUpWithNoPingServer(t, config.ConnectOptions{KeepaliveParams: config.ClientKeepalive{
 		Time:    250 * time.Millisecond,
 		Timeout: 250 * time.Millisecond,
 	}}, connCh, exitCh)
@@ -354,8 +355,8 @@ func TestKeepaliveClientClosesWithActiveStreams(t *testing.T) {
 // responds to keepalive pings, and makes sure than a client transport stays
 // healthy without any active streams.
 func TestKeepaliveClientStaysHealthyWithResponsiveServer(t *testing.T) {
-	server, client := setUpWithOptions(t, 0, &ServerConfig{}, normal, ConnectOptions{
-		KeepaliveParams: ClientKeepalive{
+	server, client := setUpWithOptions(t, 0, &config.ServerConfig{}, normal, config.ConnectOptions{
+		KeepaliveParams: config.ClientKeepalive{
 			Time:                500 * time.Millisecond,
 			Timeout:             500 * time.Millisecond,
 			PermitWithoutStream: true,
@@ -385,14 +386,14 @@ func TestKeepaliveClientStaysHealthyWithResponsiveServer(t *testing.T) {
 // explicitly makes sure the fix works and the client sends a ping every [Time]
 // period.
 func TestKeepaliveClientFrequency(t *testing.T) {
-	serverConfig := &ServerConfig{
-		KeepaliveEnforcementPolicy: EnforcementPolicy{
+	serverConfig := &config.ServerConfig{
+		KeepaliveEnforcementPolicy: config.EnforcementPolicy{
 			MinTime:             200 * time.Millisecond, // 1.2 seconds
 			PermitWithoutStream: true,
 		},
 	}
-	clientOptions := ConnectOptions{
-		KeepaliveParams: ClientKeepalive{
+	clientOptions := config.ConnectOptions{
+		KeepaliveParams: config.ClientKeepalive{
 			Time:                150 * time.Millisecond,
 			Timeout:             300 * time.Millisecond,
 			PermitWithoutStream: true,
@@ -430,13 +431,13 @@ func TestKeepaliveClientFrequency(t *testing.T) {
 // (when there are no active streams), based on the configured
 // EnforcementPolicy.
 func TestKeepaliveServerEnforcementWithAbusiveClientNoRPC(t *testing.T) {
-	serverConfig := &ServerConfig{
-		KeepaliveEnforcementPolicy: EnforcementPolicy{
+	serverConfig := &config.ServerConfig{
+		KeepaliveEnforcementPolicy: config.EnforcementPolicy{
 			MinTime: 2 * time.Second,
 		},
 	}
-	clientOptions := ConnectOptions{
-		KeepaliveParams: ClientKeepalive{
+	clientOptions := config.ConnectOptions{
+		KeepaliveParams: config.ClientKeepalive{
 			Time:                50 * time.Millisecond,
 			Timeout:             1 * time.Second,
 			PermitWithoutStream: true,
@@ -474,13 +475,13 @@ func TestKeepaliveServerEnforcementWithAbusiveClientNoRPC(t *testing.T) {
 // (even when there is an active stream), based on the configured
 // EnforcementPolicy.
 func TestKeepaliveServerEnforcementWithAbusiveClientWithRPC(t *testing.T) {
-	serverConfig := &ServerConfig{
-		KeepaliveEnforcementPolicy: EnforcementPolicy{
+	serverConfig := &config.ServerConfig{
+		KeepaliveEnforcementPolicy: config.EnforcementPolicy{
 			MinTime: 2 * time.Second,
 		},
 	}
-	clientOptions := ConnectOptions{
-		KeepaliveParams: ClientKeepalive{
+	clientOptions := config.ConnectOptions{
+		KeepaliveParams: config.ClientKeepalive{
 			Time:    50 * time.Millisecond,
 			Timeout: 1 * time.Second,
 		},
@@ -521,14 +522,14 @@ func TestKeepaliveServerEnforcementWithAbusiveClientWithRPC(t *testing.T) {
 // sends keepalive pings in accordance to the configured keepalive
 // EnforcementPolicy.
 func TestKeepaliveServerEnforcementWithObeyingClientNoRPC(t *testing.T) {
-	serverConfig := &ServerConfig{
-		KeepaliveEnforcementPolicy: EnforcementPolicy{
+	serverConfig := &config.ServerConfig{
+		KeepaliveEnforcementPolicy: config.EnforcementPolicy{
 			MinTime:             50 * time.Millisecond,
 			PermitWithoutStream: true,
 		},
 	}
-	clientOptions := ConnectOptions{
-		KeepaliveParams: ClientKeepalive{
+	clientOptions := config.ConnectOptions{
+		KeepaliveParams: config.ClientKeepalive{
 			Time:                51 * time.Millisecond,
 			Timeout:             500 * time.Millisecond,
 			PermitWithoutStream: true,
@@ -556,13 +557,13 @@ func TestKeepaliveServerEnforcementWithObeyingClientNoRPC(t *testing.T) {
 // sends keepalive pings in accordance to the configured keepalive
 // EnforcementPolicy.
 func TestKeepaliveServerEnforcementWithObeyingClientWithRPC(t *testing.T) {
-	serverConfig := &ServerConfig{
-		KeepaliveEnforcementPolicy: EnforcementPolicy{
+	serverConfig := &config.ServerConfig{
+		KeepaliveEnforcementPolicy: config.EnforcementPolicy{
 			MinTime: 50 * time.Millisecond,
 		},
 	}
-	clientOptions := ConnectOptions{
-		KeepaliveParams: ClientKeepalive{
+	clientOptions := config.ConnectOptions{
+		KeepaliveParams: config.ClientKeepalive{
 			Time:    51 * time.Millisecond,
 			Timeout: 500 * time.Millisecond,
 		},
@@ -595,13 +596,13 @@ func TestKeepaliveServerEnforcementWithObeyingClientWithRPC(t *testing.T) {
 // to false. This should ensure that the keepalive functionality on the client
 // side enters a dormant state.
 func TestKeepaliveServerEnforcementWithDormantKeepaliveOnClient(t *testing.T) {
-	serverConfig := &ServerConfig{
-		KeepaliveEnforcementPolicy: EnforcementPolicy{
+	serverConfig := &config.ServerConfig{
+		KeepaliveEnforcementPolicy: config.EnforcementPolicy{
 			MinTime: 400 * time.Millisecond,
 		},
 	}
-	clientOptions := ConnectOptions{
-		KeepaliveParams: ClientKeepalive{
+	clientOptions := config.ConnectOptions{
+		KeepaliveParams: config.ClientKeepalive{
 			Time:    25 * time.Millisecond,
 			Timeout: 250 * time.Millisecond,
 		},
