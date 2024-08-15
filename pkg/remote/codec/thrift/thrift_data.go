@@ -212,7 +212,7 @@ func decodeBasicThriftData(trans remote.ByteBuffer, data interface{}) error {
 	if err = verifyUnmarshalBasicThriftDataType(data); err != nil {
 		return err
 	}
-	if err = apache.ThriftRead(apache.NewDefaultTransport(trans), data); err != nil {
+	if err = apache.ThriftRead(trans, data); err != nil {
 		return remote.NewTransError(remote.ProtocolError, err)
 	}
 	return nil
