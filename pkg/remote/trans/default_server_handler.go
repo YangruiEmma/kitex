@@ -90,11 +90,11 @@ func (t *svrTransHandler) Read(ctx context.Context, conn net.Conn, recvMsg remot
 	var bufReader remote.ByteBuffer
 	defer func() {
 		if r := recover(); r != nil {
-			stack := string(debug.Stack())
-			kerrors.ErrPanic.WithCauseAndStack(fmt.Errorf("[happened in Read] %s", r), stack)
-			panicErr := kerrors.ErrPanic.WithCauseAndStack(fmt.Errorf("[happened in Read] %s", r), stack)
-			rpcStats := rpcinfo.AsMutableRPCStats(recvMsg.RPCInfo().Stats())
-			rpcStats.SetPanicked(panicErr)
+			_ = string(debug.Stack())
+			//kerrors.ErrPanic.WithCauseAndStack(fmt.Errorf("[happened in Read] %s", r), stack)
+			//panicErr := kerrors.ErrPanic.WithCauseAndStack(fmt.Errorf("[happened in Read] %s", r), stack)
+			//rpcStats := rpcinfo.AsMutableRPCStats(recvMsg.RPCInfo().Stats())
+			//rpcStats.SetPanicked(panicErr)
 			//err = remote.NewTransError(remote.ProtocolError, kerrors.ErrPanic.WithCauseAndStack(fmt.Errorf("[happened in Read] %s", r), stack))
 			nctx = ctx
 		}
