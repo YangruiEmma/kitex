@@ -94,7 +94,7 @@ func (t *svrTransHandler) Read(ctx context.Context, conn net.Conn, recvMsg remot
 			stack := string(debug.Stack())
 			panicErr := kerrors.ErrPanic.WithCauseAndStack(fmt.Errorf("[happened in Read] %s", r), stack)
 			rpcinfo.AsMutableRPCStats(ri.Stats()).SetPanicked(panicErr)
-			//err = remote.NewTransError(remote.ProtocolError, kerrors.ErrPanic.WithCauseAndStack(fmt.Errorf("[happened in Read] %s", r), stack))
+			err = remote.NewTransError(remote.ProtocolError, panicErr)
 			nctx = ctx
 		}
 		t.ext.ReleaseBuffer(bufReader, err)
