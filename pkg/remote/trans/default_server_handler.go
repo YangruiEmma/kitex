@@ -89,6 +89,14 @@ func (t *svrTransHandler) Write(ctx context.Context, conn net.Conn, sendMsg remo
 func (t *svrTransHandler) Read(ctx context.Context, conn net.Conn, recvMsg remote.Message) (nctx context.Context, err error) {
 	var bufReader remote.ByteBuffer
 	defer func() {
+		if r := recover(); r != nil {
+			stack := string(debug.Stack())
+			panicErr := kerrors.ErrPanic.WithCauseAndStack(fmt.Errorf("[happened in Read] %s", r), stack)
+			rpcStats := rpcinfo.AsMutableRPCStats(recvMsg.RPCInfo().Stats())
+			rpcStats.SetPanicked(panicErr)
+			err = remote.NewTransError(remote.ProtocolError, kerrors.ErrPanic.WithCauseAndStack(fmt.Errorf("[happened in Read] %s", r), stack))
+			nctx = ctx
+		}
 		t.ext.ReleaseBuffer(bufReader, err)
 		rpcinfo.Record(ctx, recvMsg.RPCInfo(), stats.ReadFinish, err)
 	}()
@@ -133,9 +141,8 @@ func (t *svrTransHandler) OnRead(ctx context.Context, conn net.Conn) (err error)
 	var sendMsg remote.Message
 	closeConnOutsideIfErr := true
 	defer func() {
-		panicErr := recover()
-		var wrapErr error
-		if panicErr != nil {
+		var panicErr error
+		if r := recover(); r != nil {
 			stack := string(debug.Stack())
 			if conn != nil {
 				ri := rpcinfo.GetRPCInfo(ctx)
@@ -144,11 +151,9 @@ func (t *svrTransHandler) OnRead(ctx context.Context, conn net.Conn) (err error)
 			} else {
 				klog.CtxErrorf(ctx, "KITEX: panic happened, error=%v\nstack=%s", panicErr, stack)
 			}
+			panicErr = kerrors.ErrPanic.WithCauseAndStack(fmt.Errorf("[happened in OnRead] %s", panicErr), stack)
 			if err == nil {
-				// if err is nil, set err as panic wrapErr
-				wrapErr = kerrors.ErrPanic.WithCauseAndStack(fmt.Errorf("[happened in OnRead] %s", panicErr), stack)
-				err = remote.NewTransError(remote.InternalError, wrapErr)
-				t.writeErrorReplyIfNeeded(ctx, recvMsg, conn, err, ri, true)
+				err = panicErr
 			}
 		}
 		t.finishTracer(ctx, ri, err, panicErr)
@@ -278,12 +283,6 @@ func (t *svrTransHandler) writeErrorReplyIfNeeded(
 		// conn is closed, no need reply
 		return
 	}
-	defer func() {
-		if r := recover(); r != nil {
-			rService, rAddr := getRemoteInfo(ri, conn)
-			klog.CtxErrorf(ctx, "KITEX: write error reply panic, remoteAddress=%s, remoteService=%s, error=%v\nstack=%s", rAddr, rService, r, string(debug.Stack()))
-		}
-	}()
 	svcInfo := recvMsg.ServiceInfo()
 	if svcInfo != nil {
 		if methodInfo, _ := GetMethodInfo(ri, svcInfo); methodInfo != nil {
